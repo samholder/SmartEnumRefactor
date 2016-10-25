@@ -44,11 +44,12 @@ namespace RefactorEnumToSmartEnum
         {
             string enumName = enumDeclaration.Identifier.Text;
             var originalProject = document.Project;
-            var className = enumName + "class";
+            var className = enumName;
             var newDocument = originalProject.AddDocument(className,
                 SmartEnumGenerator.CreateSmartEnumClass(enumDeclaration, className));
-            return document.Project.Solution.AddDocument(newDocument.Id, newDocument.Name,
-                await newDocument.GetTextAsync(cancellationToken));
+            var documentRoot = await document.GetSyntaxRootAsync(cancellationToken);
+            var updatedDocument= documentRoot.ReplaceNode(enumDeclaration, newDocument.GetSyntaxRootAsync(cancellationToken).Result);
+            return document.WithSyntaxRoot(updatedDocument).Project.Solution;
         }
     }
 }
